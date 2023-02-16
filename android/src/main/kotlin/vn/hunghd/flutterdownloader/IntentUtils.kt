@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import androidx.core.content.FileProvider
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -43,7 +44,7 @@ object IntentUtils {
             inputFile = FileInputStream(path)
             mime = URLConnection.guessContentTypeFromStream(inputFile) // fails sometimes
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e)
         } finally {
             if (inputFile != null) {
                 try {

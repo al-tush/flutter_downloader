@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
+import timber.log.Timber
 
 class TaskDao(private val dbHelper: TaskDbHelper) {
     private val projection = arrayOf(
@@ -69,7 +70,7 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
             )
             db.setTransactionSuccessful()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e)
         } finally {
             db.endTransaction()
         }
@@ -142,7 +143,7 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
             )
             db.setTransactionSuccessful()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e)
         } finally {
             db.endTransaction()
         }
@@ -172,7 +173,7 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
             )
             db.setTransactionSuccessful()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e)
         } finally {
             db.endTransaction()
         }
@@ -192,7 +193,7 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
             )
             db.setTransactionSuccessful()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e)
         } finally {
             db.endTransaction()
         }
@@ -213,7 +214,7 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
             )
             db.setTransactionSuccessful()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e)
         } finally {
             db.endTransaction()
         }
@@ -228,7 +229,7 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
             db.delete(TaskEntry.TABLE_NAME, whereClause, whereArgs)
             db.setTransactionSuccessful()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e)
         } finally {
             db.endTransaction()
         }
@@ -248,7 +249,7 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
             )
             db.setTransactionSuccessful()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e)
         } finally {
             db.endTransaction()
         }

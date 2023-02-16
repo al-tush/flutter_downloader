@@ -30,6 +30,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import org.json.JSONException
 import org.json.JSONObject
+import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -211,7 +212,7 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
         } catch (e: Exception) {
             updateNotification(applicationContext, filename ?: url, DownloadStatus.FAILED, -1, null, true)
             taskDao?.updateTask(id.toString(), DownloadStatus.FAILED, lastProgress)
-            e.printStackTrace()
+            Timber.e(e)
             dbHelper = null
             taskDao = null
             Result.failure()
@@ -694,7 +695,7 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
                     try {
                         Thread.sleep(1000)
                     } catch (e: InterruptedException) {
-                        e.printStackTrace()
+                        Timber.e(e)
                     }
                 } else {
                     log("Update too frequently!!!!, this should be dropped")
