@@ -103,6 +103,7 @@ class FlutterDownloader {
     bool saveInPublicStorage = false,
     bool allowCellular = true,
     int timeout = 15000,
+    String? customData,
   }) async {
     assert(_initialized, 'plugin flutter_downloader is not initialized');
     assert(Directory(savedDir).existsSync(), 'savedDir does not exist');
@@ -119,6 +120,7 @@ class FlutterDownloader {
         'save_in_public_storage': saveInPublicStorage,
         'timeout': timeout,
         'allow_cellular': allowCellular,
+        'custom_data': customData,
       });
 
       if (taskId == null) {
@@ -165,6 +167,8 @@ class FlutterDownloader {
 
             // allowCellular field is true by default (similar to enqueue())
             allowCellular: (item['allow_cellular'] as bool?) ?? true,
+
+            customData: item['custom_data'] as String?,
           );
         },
       ).toList();
@@ -225,6 +229,8 @@ class FlutterDownloader {
 
             // allowCellular field is true by default (similar to enqueue())
             allowCellular: (item['allow_cellular'] as bool?) ?? true,
+
+            customData: item['custom_data'] as String?,
           );
         },
       ).toList();
@@ -345,6 +351,24 @@ class FlutterDownloader {
       _log(e.message);
     }
   }
+
+  /// Updates [customData] filed for task by [taskId]
+  static Future<void> updateCustomData({
+    required String taskId,
+    required String customData,
+  }) async {
+    assert(_initialized, 'plugin flutter_downloader is not initialized');
+
+    try {
+      return await _channel.invokeMethod('updateCustomData', {
+        'task_id': taskId,
+        'custom_data': customData,
+      });
+    } on PlatformException catch (e) {
+      _log(e.message);
+    }
+  }
+
 
   /// Opens the file downloaded by download task with [taskId]. Returns true if
   /// the downloaded file can be opened, false otherwise.

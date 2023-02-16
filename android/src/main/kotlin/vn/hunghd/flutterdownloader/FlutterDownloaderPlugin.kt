@@ -64,6 +64,7 @@ class FlutterDownloaderPlugin : MethodChannel.MethodCallHandler, FlutterPlugin {
             "retry" -> retry(call, result)
             "open" -> open(call, result)
             "remove" -> remove(call, result)
+            "updateCustomData" -> updateCustomData(call, result)
             else -> result.notImplemented()
         }
     }
@@ -169,6 +170,7 @@ class FlutterDownloaderPlugin : MethodChannel.MethodCallHandler, FlutterPlugin {
         val requiresStorageNotLow: Boolean = call.requireArgument("requires_storage_not_low")
         val saveInPublicStorage: Boolean = call.requireArgument("save_in_public_storage")
         val allowCellular: Boolean = call.requireArgument("allow_cellular")
+        val customData: String? = call.requireArgument("custom_data")
         val request: WorkRequest = buildRequest(
             url,
             savedDir,
@@ -180,7 +182,7 @@ class FlutterDownloaderPlugin : MethodChannel.MethodCallHandler, FlutterPlugin {
             requiresStorageNotLow,
             saveInPublicStorage,
             timeout,
-            allowCellular = allowCellular
+            allowCellular = allowCellular,
         )
         WorkManager.getInstance(requireContext()).enqueue(request)
         val taskId: String = request.id.toString()
@@ -197,7 +199,8 @@ class FlutterDownloaderPlugin : MethodChannel.MethodCallHandler, FlutterPlugin {
             showNotification,
             openFileFromNotification,
             saveInPublicStorage,
-            allowCellular = allowCellular
+            allowCellular = allowCellular,
+            customData,
         )
     }
 
@@ -214,6 +217,7 @@ class FlutterDownloaderPlugin : MethodChannel.MethodCallHandler, FlutterPlugin {
             item["saved_dir"] = task.savedDir
             item["time_created"] = task.timeCreated
             item["allow_cellular"] = task.allowCellular
+            item["custom_data"] = task.customData
             array.add(item)
         }
         result.success(array)
@@ -233,6 +237,7 @@ class FlutterDownloaderPlugin : MethodChannel.MethodCallHandler, FlutterPlugin {
             item["saved_dir"] = task.savedDir
             item["time_created"] = task.timeCreated
             item["allow_cellular"] = task.allowCellular
+            item["custom_data"] = task.customData
             array.add(item)
         }
         result.success(array)
@@ -400,6 +405,13 @@ class FlutterDownloaderPlugin : MethodChannel.MethodCallHandler, FlutterPlugin {
         } else {
             result.error(invalidTaskId, "not found task corresponding to given task id", null)
         }
+    }
+
+    private fun updateCustomData(call: MethodCall, result: MethodChannel.Result) {
+        val taskId: String = call.requireArgument("task_id")
+        val customData: String? = call.requireArgument("custom_data")
+        taskDao!!.updateCustomData(taskId, customData)
+        result.success(null);
     }
 
     private fun deleteFileInMediaStore(file: File) {

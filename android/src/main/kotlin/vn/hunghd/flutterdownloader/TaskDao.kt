@@ -22,6 +22,7 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
         TaskEntry.COLUMN_NAME_TIME_CREATED,
         TaskEntry.COLUMN_SAVE_IN_PUBLIC_STORAGE,
         TaskEntry.COLUMN_ALLOW_CELLULAR,
+        TaskEntry.COLUMN_NAME_CUSTOM_DATA,
     )
 
     fun insertOrUpdateNewTask(
@@ -35,7 +36,8 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
         showNotification: Boolean,
         openFileFromNotification: Boolean,
         saveInPublicStorage: Boolean,
-        allowCellular: Boolean
+        allowCellular: Boolean,
+        customData: String?
     ) {
         val db = dbHelper.writableDatabase
         val values = ContentValues()
@@ -56,6 +58,7 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
         values.put(TaskEntry.COLUMN_NAME_TIME_CREATED, System.currentTimeMillis())
         values.put(TaskEntry.COLUMN_SAVE_IN_PUBLIC_STORAGE, if (saveInPublicStorage) 1 else 0)
         values.put(TaskEntry.COLUMN_ALLOW_CELLULAR, if (allowCellular) 1 else 0)
+        values.put(TaskEntry.COLUMN_NAME_CUSTOM_DATA, customData)
         db.beginTransaction()
         try {
             db.insertWithOnConflict(
@@ -231,6 +234,26 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
         }
     }
 
+    fun updateCustomData(taskId: String, customData: String?) {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues()
+        values.put(TaskEntry.COLUMN_NAME_CUSTOM_DATA, customData)
+        db.beginTransaction()
+        try {
+            db.update(
+                TaskEntry.TABLE_NAME,
+                values,
+                TaskEntry.COLUMN_NAME_TASK_ID + " = ?",
+                arrayOf(taskId)
+            )
+            db.setTransactionSuccessful()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
     private fun parseCursor(cursor: Cursor): DownloadTask {
         val primaryId = cursor.getInt(cursor.getColumnIndexOrThrow(BaseColumns._ID))
         val taskId = cursor.getString(cursor.getColumnIndexOrThrow(TaskEntry.COLUMN_NAME_TASK_ID))
@@ -247,6 +270,7 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
         val timeCreated = cursor.getLong(cursor.getColumnIndexOrThrow(TaskEntry.COLUMN_NAME_TIME_CREATED))
         val saveInPublicStorage = cursor.getShort(cursor.getColumnIndexOrThrow(TaskEntry.COLUMN_SAVE_IN_PUBLIC_STORAGE)).toInt()
         val allowCelluar = cursor.getShort(cursor.getColumnIndexOrThrow(TaskEntry.COLUMN_ALLOW_CELLULAR)).toInt()
+        val customData = cursor.getString(cursor.getColumnIndexOrThrow(TaskEntry.COLUMN_NAME_CUSTOM_DATA))
         return DownloadTask(
             primaryId,
             taskId,
@@ -262,7 +286,8 @@ class TaskDao(private val dbHelper: TaskDbHelper) {
             clickToOpenDownloadedFile == 1,
             timeCreated,
             saveInPublicStorage == 1,
-            allowCellular = allowCelluar == 1
+            allowCellular = allowCelluar == 1,
+            customData
         )
     }
 }

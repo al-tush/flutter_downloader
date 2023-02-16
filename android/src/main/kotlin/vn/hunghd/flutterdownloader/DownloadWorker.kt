@@ -702,7 +702,7 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
                 }
             }
             log("Update notification: {notificationId: $primaryId, title: $title, status: $status, progress: $progress}")
-            NotificationManagerCompat.from(context).notify(primaryId, builder.build())
+             NotificationManagerCompat.from(context).notify(primaryId, builder.build())
             lastCallUpdateNotification = System.currentTimeMillis()
         }
     }

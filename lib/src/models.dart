@@ -60,6 +60,7 @@ class DownloadTask {
     required this.savedDir,
     required this.timeCreated,
     required this.allowCellular,
+    required this.customData,
   });
 
   /// Unique identifier of this task.
@@ -86,7 +87,10 @@ class DownloadTask {
   /// Whether downloads can use cellular data
   final bool allowCellular;
 
+  /// Any data
+  final String? customData;
+
   @override
   String toString() =>
-      'DownloadTask(taskId: $taskId, status: $status, progress: $progress, url: $url, filename: $filename, savedDir: $savedDir, timeCreated: $timeCreated, allowCellular: $allowCellular)';
+      'DownloadTask(taskId: $taskId, status: $status, progress: $progress, url: $url, filename: $filename, savedDir: $savedDir, timeCreated: $timeCreated, allowCellular: $allowCellular, customData: $customData)';
 }
