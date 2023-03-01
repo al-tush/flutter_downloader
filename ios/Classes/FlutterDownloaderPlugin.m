@@ -23,6 +23,7 @@
 #define KEY_OPEN_FILE_FROM_NOTIFICATION @"open_file_from_notification"
 #define KEY_QUERY @"query"
 #define KEY_TIME_CREATED @"time_created"
+#define KEY_CUSTOM_DATA @"custom_data"
 
 #define NULL_VALUE @"<null>"
 
@@ -420,11 +421,11 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
     : [origin stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLQueryAllowedCharacterSet];
 }
 
-- (void) addNewTask: (NSString*) taskId url: (NSString*) url status: (int) status progress: (int) progress filename: (NSString*) filename savedDir: (NSString*) savedDir headers: (NSString*) headers resumable: (BOOL) resumable showNotification: (BOOL) showNotification openFileFromNotification: (BOOL) openFileFromNotification
+- (void) addNewTask: (NSString*) taskId url: (NSString*) url status: (int) status progress: (int) progress filename: (NSString*) filename savedDir: (NSString*) savedDir headers: (NSString*) headers resumable: (BOOL) resumable showNotification: (BOOL) showNotification openFileFromNotification: (BOOL) openFileFromNotification customData: (NSString*) customData
 {
     headers = [self escape:headers revert:false];
-    NSString *query = [NSString stringWithFormat:@"INSERT INTO task (task_id,url,status,progress,file_name,saved_dir,headers,resumable,show_notification,open_file_from_notification,time_created) VALUES (\"%@\",\"%@\",%d,%d,\"%@\",\"%@\",\"%@\",%d,%d,%d,%lld)", taskId, url, status, progress, filename, savedDir, headers, resumable ? 1 : 0, showNotification ? 1 : 0, openFileFromNotification ? 1 : 0, [self currentTimeInMilliseconds]];
-    [_dbManager executeQuery:query];
+    NSString *query = [NSString stringWithFormat:@"INSERT INTO task (task_id,url,status,progress,file_name,saved_dir,headers,resumable,show_notification,open_file_from_notification,time_created,custom_data) VALUES (\"%@\",\"%@\",%d,%d,\"%@\",\"%@\",\"%@\",%d,%d,%d,%lld,?)", taskId, url, status, progress, filename, savedDir, headers, resumable ? 1 : 0, showNotification ? 1 : 0, openFileFromNotification ? 1 : 0, [self currentTimeInMilliseconds]];
+    [_dbManager executeQuery:query stringParams:@[customData]];
     if (debug) {
         if (_dbManager.affectedRows != 0) {
             NSLog(@"Query was executed successfully. Affected rows = %d", _dbManager.affectedRows);
@@ -437,7 +438,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
 - (void) updateTask: (NSString*) taskId status: (int) status progress: (int) progress
 {
     NSString *query = [NSString stringWithFormat:@"UPDATE task SET status=%d, progress=%d WHERE task_id=\"%@\"", status, progress, taskId];
-    [_dbManager executeQuery:query];
+    [_dbManager executeQuery:query stringParams:@[]];
     if (debug) {
         if (_dbManager.affectedRows != 0) {
             NSLog(@"Query was executed successfully. Affected rows = %d", _dbManager.affectedRows);
@@ -449,7 +450,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
 
 - (void) updateTask: (NSString*) taskId filename: (NSString*) filename {
     NSString *query = [NSString stringWithFormat:@"UPDATE task SET file_name=\"%@\" WHERE task_id=\"%@\"", filename, taskId];
-    [_dbManager executeQuery:query];
+    [_dbManager executeQuery:query stringParams:@[]];
     if (debug) {
         if (_dbManager.affectedRows != 0) {
             NSLog(@"Query was executed successfully. Affected rows = %d", _dbManager.affectedRows);
@@ -461,7 +462,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
 
 - (void) updateTask: (NSString*) taskId status: (int) status progress: (int) progress resumable: (BOOL) resumable {
     NSString *query = [NSString stringWithFormat:@"UPDATE task SET status=%d, progress=%d, resumable=%d WHERE task_id=\"%@\"", status, progress, resumable ? 1 : 0, taskId];
-    [_dbManager executeQuery:query];
+    [_dbManager executeQuery:query stringParams:@[]];
     if (debug) {
         if (_dbManager.affectedRows != 0) {
             NSLog(@"Query was executed successfully. Affected rows = %d", _dbManager.affectedRows);
@@ -473,7 +474,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
 
 - (void) updateTask: (NSString*) currentTaskId newTaskId: (NSString*) newTaskId status: (int) status resumable: (BOOL) resumable {
     NSString *query = [NSString stringWithFormat:@"UPDATE task SET task_id=\"%@\", status=%d, resumable=%d, time_created=%lld WHERE task_id=\"%@\"", newTaskId, status, resumable ? 1 : 0, [self currentTimeInMilliseconds], currentTaskId];
-    [_dbManager executeQuery:query];
+    [_dbManager executeQuery:query stringParams:@[]];
     if (debug) {
         if (_dbManager.affectedRows != 0) {
             NSLog(@"Query was executed successfully. Affected rows = %d", _dbManager.affectedRows);
@@ -486,7 +487,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
 - (void) updateTask: (NSString*) taskId resumable: (BOOL) resumable
 {
     NSString *query = [NSString stringWithFormat:@"UPDATE task SET resumable=%d WHERE task_id=\"%@\"", resumable ? 1 : 0, taskId];
-    [_dbManager executeQuery:query];
+    [_dbManager executeQuery:query stringParams:@[]];
     if (debug) {
         if (_dbManager.affectedRows != 0) {
             NSLog(@"Query was executed successfully. Affected rows = %d", _dbManager.affectedRows);
@@ -498,7 +499,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
 
 - (void) deleteTask: (NSString*) taskId {
     NSString *query = [NSString stringWithFormat:@"DELETE FROM task WHERE task_id=\"%@\"", taskId];
-    [_dbManager executeQuery:query];
+    [_dbManager executeQuery:query stringParams:@[]];
     if (debug) {
         if (_dbManager.affectedRows != 0) {
             NSLog(@"Query was executed successfully. Affected rows = %d", _dbManager.affectedRows);
@@ -576,6 +577,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
         NSString *url = [record objectAtIndex:[_dbManager.arrColumnNames indexOfObject:@"url"]];
         NSString *filename = [record objectAtIndex:[_dbManager.arrColumnNames indexOfObject:@"file_name"]];
         NSString *savedDir = [self absoluteSavedDirPath:[record objectAtIndex:[_dbManager.arrColumnNames indexOfObject:@"saved_dir"]]];
+        NSString *customData = [record objectAtIndex:[_dbManager.arrColumnNames indexOfObject:@"custom_data"]];
         NSString *headers = @"";
         // in certain cases, headers column might not be available and will cause NSRangeException
         @try {
@@ -588,7 +590,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
         int showNotification = [[record objectAtIndex:[_dbManager.arrColumnNames indexOfObject:@"show_notification"]] intValue];
         int openFileFromNotification = [[record objectAtIndex:[_dbManager.arrColumnNames indexOfObject:@"open_file_from_notification"]] intValue];
         long long timeCreated = [[record objectAtIndex:[_dbManager.arrColumnNames indexOfObject:@"time_created"]] longLongValue];
-        return [NSDictionary dictionaryWithObjectsAndKeys:taskId, KEY_TASK_ID, @(status), KEY_STATUS, @(progress), KEY_PROGRESS, url, KEY_URL, filename, KEY_FILE_NAME, headers, KEY_HEADERS, savedDir, KEY_SAVED_DIR, [NSNumber numberWithBool:(resumable == 1)], KEY_RESUMABLE, [NSNumber numberWithBool:(showNotification == 1)], KEY_SHOW_NOTIFICATION, [NSNumber numberWithBool:(openFileFromNotification == 1)], KEY_OPEN_FILE_FROM_NOTIFICATION, @(timeCreated), KEY_TIME_CREATED, nil];
+        return [NSDictionary dictionaryWithObjectsAndKeys:taskId, KEY_TASK_ID, @(status), KEY_STATUS, @(progress), KEY_PROGRESS, url, KEY_URL, filename, KEY_FILE_NAME, headers, KEY_HEADERS, savedDir, KEY_SAVED_DIR, [NSNumber numberWithBool:(resumable == 1)], KEY_RESUMABLE, [NSNumber numberWithBool:(showNotification == 1)], KEY_SHOW_NOTIFICATION, [NSNumber numberWithBool:(openFileFromNotification == 1)], KEY_OPEN_FILE_FROM_NOTIFICATION, @(timeCreated), KEY_TIME_CREATED, customData, KEY_CUSTOM_DATA, nil];
     } @catch(NSException *exception) {
         NSLog(@"invalid task data: %@", exception);
         return [NSDictionary dictionary];
@@ -640,6 +642,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
     NSString *headers = call.arguments[KEY_HEADERS];
     NSNumber *showNotification = call.arguments[KEY_SHOW_NOTIFICATION];
     NSNumber *openFileFromNotification = call.arguments[KEY_OPEN_FILE_FROM_NOTIFICATION];
+    NSString *customData = call.arguments[KEY_CUSTOM_DATA];
 
     NSURLSessionDownloadTask *task = [self downloadTaskWithURL:[NSURL URLWithString:urlString] fileName:fileName andSavedDir:savedDir andHeaders:headers];
 
@@ -660,7 +663,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
     __typeof__(self) __weak weakSelf = self;
     
     [self executeInDatabaseQueueForTask:^{
-        [weakSelf addNewTask:taskId url:urlString status:STATUS_ENQUEUED progress:0 filename:fileName savedDir:shortSavedDir headers:headers resumable:NO showNotification: [showNotification boolValue] openFileFromNotification: [openFileFromNotification boolValue]];
+        [weakSelf addNewTask:taskId url:urlString status:STATUS_ENQUEUED progress:0 filename:fileName savedDir:shortSavedDir headers:headers resumable:NO showNotification: [showNotification boolValue] openFileFromNotification: [openFileFromNotification boolValue] customData:customData];
     }];
     result(taskId);
     [self sendUpdateProgressForTaskId:taskId inStatus:@(STATUS_ENQUEUED) andProgress:@0];
@@ -861,6 +864,21 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
     }
 }
 
+- (void)updateCustomData:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSString *taskId = call.arguments[KEY_TASK_ID];
+    NSString *customData = call.arguments[KEY_CUSTOM_DATA];
+    NSString *query = @"UPDATE task SET custom_data=? WHERE task_id=?";
+    [_dbManager executeQuery:query stringParams:@[customData, taskId]];
+    if (debug) {
+        if (_dbManager.affectedRows != 0) {
+            NSLog(@"Query was executed successfully. Affected rows = %d", _dbManager.affectedRows);
+        } else {
+            NSLog(@"Could not execute the query.");
+        }
+    }
+    result([NSNull null]);
+}
+
 # pragma mark - FlutterPlugin
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -898,6 +916,8 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
         [self openMethodCall:call result:result];
     } else if ([@"remove" isEqualToString:call.method]) {
         [self removeMethodCall:call result:result];
+    } else if ([@"updateCustomData" isEqualToString:call.method]) {
+        [self updateCustomData:call result:result];
     } else {
         result(FlutterMethodNotImplemented);
     }

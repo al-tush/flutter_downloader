@@ -21,6 +21,6 @@
 
 -(NSArray *)loadDataFromDB:(NSString *)query;
 
--(void)executeQuery:(NSString *)query;
+-(void)executeQuery:(NSString *)query stringParams:(NSArray<NSString *> *)params;
 
 @end

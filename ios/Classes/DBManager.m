@@ -16,7 +16,7 @@
 @property (nonatomic, strong) NSMutableArray *arrResults;
 
 -(void)copyDatabaseIntoAppDirectory;
--(void)runQuery:(const char *)query isQueryExecutable:(BOOL)queryExecutable;
+-(void)runQuery:(const char *)query isQueryExecutable:(BOOL)queryExecutable stringParams:(NSArray<NSString *> *)params;
 
 @end
 
@@ -70,7 +70,7 @@
     }
 }
 
--(void)runQuery:(const char *)query isQueryExecutable:(BOOL)queryExecutable{
+-(void)runQuery:(const char *)query isQueryExecutable:(BOOL)queryExecutable stringParams:(NSArray<NSString *> *)params {
     if (debug) {
         NSLog(@"execute query: %s", query);
     }
@@ -115,6 +115,9 @@
         // Load all data from database to memory.
         int prepareStatementResult = sqlite3_prepare_v2(sqlite3Database, query, -1, &compiledStatement, NULL);
         if(prepareStatementResult == SQLITE_OK) {
+            [params enumerateObjectsUsingBlock:^(NSString* param, NSUInteger idx, BOOL *stop) {
+                sqlite3_bind_text(compiledStatement, (int)idx + 1, [param UTF8String], -1, SQLITE_TRANSIENT);
+            }];
             // Check if the query is non-executable.
             if (!queryExecutable){
                 // In this case data must be loaded from the database.
@@ -192,15 +195,15 @@
 -(NSArray *)loadDataFromDB:(NSString *)query{
     // Run the query and indicate that is not executable.
     // The query string is converted to a char* object.
-    [self runQuery:[query UTF8String] isQueryExecutable:NO];
+    [self runQuery:[query UTF8String] isQueryExecutable:NO stringParams:@[]];
     
     // Returned the loaded results.
     return (NSArray *)self.arrResults;
 }
 
--(void)executeQuery:(NSString *)query{
+-(void)executeQuery:(NSString *)query stringParams:(NSArray<NSString *> *)params{
     // Run the query and indicate that is executable.
-    [self runQuery:[query UTF8String] isQueryExecutable:YES];
+    [self runQuery:[query UTF8String] isQueryExecutable:YES stringParams:params];
 }
 
 @end
